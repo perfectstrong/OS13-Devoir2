@@ -1,0 +1,4 @@
+\babel@toc {french}{}
+\contentsline {section}{\numberline {1}Loi de Cauchy}{1}
+\contentsline {subsection}{\numberline {1.1}Rappel}{1}
+\contentsline {subsection}{\numberline {1.2}Estimer les param\IeC {\`e}tres inconnus}{1}
