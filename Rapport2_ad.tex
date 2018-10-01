@@ -126,7 +126,10 @@ On obtient ainsi la figure \ref{Histogrammes et distribution de loi géométriqu
  \label{Histogrammes et distribution de loi géométrique}
 \end{figure}
 
-Pour générer les populations (voir figure , on utilise la fonction "geomGen" qui simule
+On observe bien que les histogrammes se rapprochent de la distribution théorique quand
+la taille de l'échantillon est grande (plusieurs milliers).
+
+Pour générer les populations , on utilise la fonction "geomGen" qui simule
 n expériences où, pour chacune d'entre elle, on effectue un enchainement
 d'épreuve de Bernouilli en générant une variable de loi uniforme sur
 $[0;1]$ . Si la valeur obtenu est supérieure à p, on arrête la boucle
@@ -148,7 +151,50 @@ avec $X_i,\ i\in\{1,..,n\}$ les variables d'échantillon.
 On peut effectuer un passage au logarithme pour trouver un maximum car il s'agit
 d'une fonction strictement croissante (et défini sur $]0;1]$). L'argument du maximum du logarithme
 de $L(p)$ et du maximum de $L(p)$ sont les mêmes.
-\[\log{L(p)}=n\log{p}+(\sum\limits_{i=1}^{n}X_i-n))
+\[\log{L(p)}=n\log{p}+((\sum\limits_{i=1}^{n}X_i)-n)\log{(1-p)}\]
+\[\frac{d\log{L(p)}}{dp}=\frac{n}{p}-\frac{(\sum\limits_{i=1}^{n}X_i)-n}{1-p}\]
+\[\text{On a }\frac{d\log{L(\hat{p})}}{dp}=0\]
+\[\text{Donc }\frac{n-n\hat{p}-((\sum\limits_{i=1}^{n}X_i)-n)\hat{p}}{\hat{p}(1-\hat{p})}=0\]
+\[\text{Ce qui implique (dans le cas différent de 0 et 1) }n-(\sum\limits_{i=1}^{n}X_i)\hat{p}=0\]
+Finalement :
+\[\hat{p} = \frac{n}{\sum\limits_{i=1}^{n}X_i}\]
+
+Si la résolution analytique pour trouver l'estimateur avait été impossible,
+l'utilisation d'un algorithme d'optimisation (comme une descente de gradient) ou encore
+l'utilisation d'une fonction d'intégration aurait été possible.
+
+\subsection{Test de l'estimateur}
+
+Afin de tester l'estimateur du maximum de vraisemblance pour différent taille
+d'échantillon, on utilise le code suivant :
+
+\lstinputlisting[language=Matlab]{src/deltaEspEstGeom.m}
+
+\begin{figure}[!h]
+\begin{center}
+ \includegraphics[scale=0.3]{images/biaisGeom.png} 
+\end{center}
+ \caption{Evolution du biais de l'estimateur}
+ \label{Evolution du biais de l'estimateur geom}
+\end{figure}
+
+On voit que
+
+On effectue la ...
+
+\lstinputlisting[language=Matlab]{src/deltaEstGeom.m}
+
+\begin{figure}[!h]
+\begin{center}
+ \includegraphics[scale=0.3]{images/biaisMoyGeom.png} 
+\end{center}
+ \caption{Evolution du biais moyen de l'estimateur}
+ \label{Evolution du biais moyen de l'estimateur geom}
+\end{figure}
+
+\subsection{Loi extrême}
+
+
 
 \section{Loi de Cauchy}
 \end{document}
