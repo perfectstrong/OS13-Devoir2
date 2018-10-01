@@ -6,6 +6,7 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{graphicx}
+\usepackage{url}
 \author{TRAN Quoc Nhat Han - Andrien Wartelle}
 \title{Test paramétrique et de l'estimation de la loi géométrique et de Cauchy}
 \usepackage{color}
@@ -68,6 +69,11 @@ Soit $f_X$ la fonction de densité de Cauchy de deux paramètres $x_0$ et $a$ ($
 {f_X}\left( x \right) = \frac{1}{{\pi a\left( {1 + {{\left( {\frac{{x - {x_0}}}{a}} \right)}^2}} \right)}} = \frac{1}{\pi }\frac{a}{{{{\left( {x - {x_0}} \right)}^2} + a}}
 \end{equation}
 
+\begin{figure}[h]
+\includegraphics[width=\linewidth]{images/Cauchy_distribution_theoretic.png}
+\caption{Distribution théorique de la loi Cauchy. Source : \cite{WikiLoiCauchy}}
+\end{figure}
+
 $a$ est dite l'échelle de la fonction, et $x_0$ est son médian.
 
 La loi de Cauchy n'admet ni espérance ni écart type.
@@ -113,4 +119,30 @@ On cherche l'optimum maximale.
 
 On génère une échantillon avec $a$ et $x_0$ au choix. Puis, utiliser la fonction $mle$ (Maximum Likelihood Estimator) de librairie \emph{stats4} avec 2 valeurs initiales $\hat{a}$ et $\hat{x_0}$ pour estimer $a$ et $x_0$.
 
+Nous essayons d'estimer $x_0$ et $a$ directment. L'algorithme d'approximation implémenté dans R a besoin un bon point de départ, sinon le résultat obtenu variera grossièrement.
+\begin{itemize}
+\item Etant donné que la médiane est théoriquement aussi $x_0$, choissisons $x_0$ comme la médiane de l'échantillon.
+\item Nous avons ${f_X}\left( {{x_0}} \right) = \frac{1}{{\pi a}}$. En plus, $f_X(x_0)$ est la valeur maximale $d$ de densité. Prenons alors $\hat a = \frac{1}{{\pi d}}$.
+\end{itemize}
+
+Testons avec $x_0=13$ et $a=0.5$.
+
+\lstinputlisting{src/Cauchy.R}
+
+
+\begin{figure}[h]
+\includegraphics[width=\linewidth]{images/Cauchy_breaks=20.png}
+\caption{Représentation de l'histogramme et de la courbe de densité}
+\end{figure}
+
+Les valeurs trouvées par R, $\hat{x_0} = 12.9877139$ et $\hat{a} = 0.4951073$, sont vraiment approchées à celles théoriques.
+
+\begin{thebibliography}{3}
+\bibitem{WikiLoiCauchy}
+
+Wikipedia,
+
+\url{https://en.wikipedia.org/wiki/Cauchy_distribution}
+
+\end{thebibliography}
 \end{document}
