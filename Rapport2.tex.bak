@@ -7,7 +7,7 @@
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{url}
-\author{TRAN Quoc Nhat Han - Andrien Wartelle}
+\author{TRAN Quoc Nhat Han - Andrien WARTELLE}
 \title{Test paramétrique et de l'estimation de la loi géométrique et de Cauchy}
 \usepackage{color}
 \usepackage{listings}
@@ -53,12 +53,7 @@ literate=
 \clearpage
 
 \begin{abstract}
-Ce rapport est à montrer l'application de certaines tests statistiques pour la loi géométrique et la loi de Cauchy. Chaque section consiste de trois étapes séparées:
-\begin{enumerate}
-\item \emph{Estimer les paramètres inconnus}
-\item \emph{Test de l'estimation}
-\item \emph{Test d'adéquation}
-\end{enumerate}
+Ce rapport est à montrer l'application de certaines tests statistiques pour la loi géométrique et la loi de Cauchy.
 \end{abstract}
 
 \section{Loi de Cauchy}
@@ -122,14 +117,92 @@ On génère une échantillon avec $a$ et $x_0$ au choix. Puis, utiliser la fonct
 Nous essayons d'estimer $x_0$ et $a$ directment. L'algorithme d'approximation implémenté dans R a besoin un bon point de départ, sinon le résultat obtenu variera grossièrement.
 \begin{itemize}
 \item Etant donné que la médiane est théoriquement aussi $x_0$, choissisons $x_0$ comme la médiane de l'échantillon.
-\item Nous avons ${f_X}\left( {{x_0}} \right) = \frac{1}{{\pi a}}$. En plus, $f_(X)$ est la valeur maximale $d$ de densité. Prenons alors $\hat a = \frac{1}{{\pi \max dcauchy}}$.
+\item Nous avons ${f_X}\left( {{x_0}} \right) = \frac{1}{{\pi a}}$. En plus, $f_X(x_0)$ est la valeur maximale $d$ de densité. Prenons alors $\hat a = \frac{1}{{\pi d}}$.
 \end{itemize}
 
-\lstinputlisting{src/Cauchy.R}
-\begin{figure}
-\includegraphics[width=\linewidth]{images/Cauchy_breaks=20.png}
-\caption{Représentation de l'histogramme et de la courbe de densité (théorique et }
+Testons avec $x_0=13$ et $a=0.5$.
+
+\lstinputlisting[firstline=1, lastline=49, language=R]{src/Cauchy.R}
+
+\begin{figure}[h]
+\includegraphics[width=\linewidth]{images/Cauchy_real_vs_theo.png}
+\caption{Représentation de l'histogramme et de la courbe de densité}
 \end{figure}
+
+Pour $x_0=13$ et $a=0.5$, les valeurs trouvées par R sont $\hat{x_0} = 12.9877139$ et $\hat{a} = 0.4951073$.
+
+\subsection{Test de paramètres}
+
+Nous testons ici si les valeurs trouvées par R sont vraiment approchées à celles théoriques. Pour l'instant, nous n'avons pas d'outils pour vérifier 2 variables en couple.
+
+\subsection{Test d'adéquation}
+
+R nous donne la fonction \emph{ks.test} pour valider la compabilité d'une échantillon avec une loi selon le test de Kolmogorov-Smirnov.
+
+\lstinputlisting[firstline=51, lastline=51]{src/Cauchy.R}
+
+On a trouvé $D = 0.02696$, $p-value = 0.4614$, signifiant l'écart maximale est $0.02696$ et le niveau d'acceptance est $0.4614$. Vu que nous fixons $\alpha = 5\% < p-value$, l'échantillon dépasse largement le test. Autrement dit, il se distribue selon la loi de Cauchy.
+
+\subsection{Etude de biais d'estimateur}
+
+Maintenant on s'intéresse au biais d'estimateur. On relance l'algorithme en-dessus avec de différents observations ($N = 100, 125, 150,..., 1100$). $x_0 = 13$ et $a = 0.5$.
+
+\lstinputlisting{src/Cauchy-variN.R}
+
+\begin{figure}[h]
+\includegraphics[width=\linewidth]{images/Cauchy_convergence_parametres.png}
+\caption{Convergences de $\hat{x_0}$ et $\hat{a}$ vers valeurs théoriques}
+\end{figure}
+
+Nous observons que les valeurs estimées se rassemblent assez proches de la valeur théorique.
+
+\subsection{Etude de loi d'extremum}
+
+Générons donc des échantillons de $n$ valeurs ($n=10, 100, 1000, etc.$). Parmi chacun, $\frac{n}{10}$ valeurs les plus grandes seront gardées pour étudier la loi d'extremum.
+
+Comme les réalisations sont indépendantes et identiquement distribuées, théoriquement:
+\begin{align*}
+{F_{{x_{\max }}}}\left( x \right) & = P\left( {{X_{\max }} \le x} \right)\\
+&  = P\left( {{X_1} \le x,...,{X_n} \le x} \right)\\
+ & = \prod\limits_{i = 1}^n {{F_X}\left( x \right)} \\
+ & = {F_X}{\left( x \right)^n}
+\end{align*}
+
+Avec ${F_X}\left( x \right) = \frac{1}{\pi }\arctan \frac{{x - {x_0}}}{a} + \frac{1}{2}$, la fonction de répartition de la loi de Cauchy. Alors, \[{F_{{x_{\max }}}}\left( x \right) = {\left( {\frac{1}{\pi }\arctan \frac{{x - {x_0}}}{a} + \frac{1}{2}} \right)^n}\]
+
+Or, \[\left| {\arctan \frac{{x - {x_0}}}{a}} \right| < \frac{\pi }{2} \Rightarrow \frac{{ - \pi }}{2} < \arctan \frac{{x - {x_0}}}{a} < \frac{\pi }{2} \Rightarrow 0 < \arctan \frac{{x - {x_0}}}{a} + \frac{\pi }{2} < \pi \]
+
+Par conséquence,
+
+\[\begin{array}{l}
+\tan \left( {\arctan \frac{{x - {x_0}}}{a} + \frac{\pi }{2}} \right) =  - \cot \left( {\arctan \frac{{x - {x_0}}}{a}} \right) =  - \frac{a}{{x - {x_0}}}\\
+ \Rightarrow \arctan \frac{{x - {x_0}}}{a} + \frac{\pi }{2} = \arctan \left( { - \frac{a}{{x - {x_0}}}} \right) = \arctan \frac{a}{{{x_0} - x}}\\
+ \Rightarrow {F_{{x_{\max }}}}\left( x \right) = {\pi ^{ - n}}{\left( {\arctan \frac{{x - {x_0}}}{a} + \frac{\pi }{2}} \right)^n} = {\pi ^{ - n}}{\arctan ^n}\frac{a}{{{x_0} - x}}
+\end{array}\]
+\clearpage
+
+Nous prenons 3 valeurs les plus grandes pour chaque itération, et établissons leur histogramme.
+\lstinputlisting[language=R, firstline=1, lastline=39]{src/Cauchy-extreme.R}
+\begin{center}
+
+\begin{figure}[h]
+\includegraphics[width=\linewidth*0.8]{images/Cauchy_extremum.png}
+\caption{Histogramme de valeurs extremum de la distribution de Cauchy}
+\end{figure}
+\end{center}
+
+En fin d'approximer la loi d'extremum, nous ne regardons que les réalisations positives. En utilisant le package \emph{poweRlaw}, nous calculons la compabilité de la loi d'extremum.
+
+\lstinputlisting[language=R, firstline=41, lastline=50]{src/Cauchy-extreme.R}
+\begin{center}
+\begin{figure}[h]
+\includegraphics[width=0.8\linewidth]{images/Cauchy_extremum_fitting.png}
+\caption{Approcher la loi d'extremum avec celle des maximales de Cauchy. Les données (verte) ne s'approchent pas totalement l'approximation (rouge).}
+\end{figure}
+\end{center}
+
+Calcul de $p-value$ nous retourne $0$, qui signifie l'incompabilité de ces deux loi.
+\clearpage
 
 \begin{thebibliography}{3}
 \bibitem{WikiLoiCauchy}
