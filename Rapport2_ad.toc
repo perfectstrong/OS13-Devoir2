@@ -1,0 +1,5 @@
+\babel@toc {french}{}
+\contentsline {section}{\numberline {1}Loi g\IeC {\'e}om\IeC {\'e}trique}{2}
+\contentsline {subsection}{\numberline {1.1}G\IeC {\'e}n\IeC {\'e}ration de n variables al\IeC {\'e}atoires}{3}
+\contentsline {subsection}{\numberline {1.2}Estimateurs du maximum de vraisemblance}{4}
+\contentsline {section}{\numberline {2}Loi de Cauchy}{4}

@@ -3,14 +3,18 @@
 \usepackage[french]{babel}
 \usepackage[T1]{fontenc}
 \usepackage{amsmath}
+\usepackage{amsthm}
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{url}
-\author{TRAN Quoc Nhat Han - Andrien WARTELLE}
-\title{Test paramétrique et de l'estimation de la loi géométrique et de Cauchy}
 \usepackage{color}
 \usepackage{listings}
+\usepackage{mathrsfs}
+
+\title{OS13 : Test d'estimation et loi extrême des lois de Cauchy et géométrique}
+\author{\textsc{Adrien WARTELLE} \\ \textsc{TRAN Quoc Nhat Han}}
+\date{\today}
 \lstset{
 language=R,
 basicstyle=\scriptsize\ttfamily,
@@ -45,6 +49,26 @@ literate=
   {€}{{\EUR}}1 {£}{{\pounds}}1
 }
 \numberwithin{equation}{section}
+
+\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
+\definecolor{mylilas}{RGB}{170,55,241}
+\lstset{language=Matlab,%
+    %basicstyle=\color{red},
+    breaklines=true,%
+    morekeywords={matlab2tikz},
+    keywordstyle=\color{blue},%
+    morekeywords=[2]{1}, keywordstyle=[2]{\color{black}},
+    identifierstyle=\color{black},%
+    stringstyle=\color{mylilas},
+    commentstyle=\color{mygreen},%
+    showstringspaces=false,%without this there will be a symbol in the places where there is a space
+    numbers=left,%
+    numberstyle={\tiny \color{black}},% size of the numbers
+    numbersep=9pt, % this defines how far the numbers are from the text
+    emph=[1]{for,end,break},emphstyle=[1]\color{red}, %some words to emphasise
+    %emph=[2]{word1,word2}, emphstyle=[2]{style},    
+}
+
 \begin{document}
 \maketitle 
 \renewcommand{\contentsname}{Sommaire}
@@ -200,8 +224,80 @@ En fin d'approximer la loi d'extremum, nous ne regardons que les réalisations p
 \caption{Approcher la loi d'extremum avec celle des maximales de Cauchy. Les données (verte) ne s'approchent pas totalement l'approximation (rouge).}
 \end{figure}
 
-Calcul de $p-value$ nous retourne $0$, qui signifie l'incompabilité de ces deux loi.
+Calcul de $p-value$ nous retourne $0$, qui signifie l'incompabilité de ces deux lois.
 \clearpage
+
+\section{Loi géométrique}
+
+La loi géomètrique est une loi discrète de distribution utilisé
+dans le cadre d'un enchainement (non fini) d'épreuves de Bernouilli. Soit
+X une varaible aléatoire suivant cette loi, on a:
+\[P(X=k) = (1-p)^(k-1)p\ k\in\mathbb{N}_{+}\]
+La variable X est le numéro de la première épreuve où l'on obtient un succès
+qui a une probabilité p. Ainsi, p est le seul paramètre de loi (à estimer).
+La fonction de répartition $F(k) = P(X\leq{}k)\ k\in\mathbb{N}_{+}$ est:
+\[F(k)=1-(1-p)^{k}\]
+\begin{proof}
+On peut remarquer que:
+\[P(X=k)=(1-p)^{k-1}(1-(1-p))=(1-p)^{k-1}-(1-p)^{k}\]
+Donc :
+\begin{align*}
+F(k) & =\sum\limits_{l=1}^{k}P(X=l)=\sum\limits_{l=1}^{k}((1-p)^{l-1}-(1-p)^{l}) \\
+F(k) & =\sum\limits_{l=0}^{k-1}(1-p)^{l}-\sum\limits_{l=1}^{k}(1-p)^{l}
+\end{align*}
+Soit $q=1-p$, on a :
+\begin{align*}
+F(k) & =\sum\limits_{l=0}^{k-1}q^{l}-\sum\limits_{l=1}^{k}q^{l}\\
+F(k) & =\frac{1-p^k}{1-q}-(\frac{1-q^{k+1}}{1-q}-1) \\ 
+F(k) & =\frac{1-q^k-1+q^{k+1}+1-q}{1-q} \\
+F(k) & =\frac{1-q+q^{k+1}-q^k}{1-q} \\
+F(k) & =\frac{1-q-q^k(1-q)}{1-q} \\ 
+F(k) & =\frac{1-q-q^k(1-q)}{1-q} \\
+F(k) & =1-q^k
+\end{align*}
+
+On retrouve bien :
+\[F(k)=1-(1-p)^k\]
+\end{proof}
+
+\subsection{Génération de n variables aléatoires}
+
+Afin de voir à quoi ressemble la distribution et de pouvoir tester l'estimateur que
+nous allons calculer par la suite, on génère des échantillons de 50, 500 et 5000 variables.
+On utilise ainsi le code Matlab (Octave) ce dessous :
+
+\lstinputlisting[language=Matlab, firstline=3, lastline=28]{src/geom.m}
+
+On obtient ainsi la figure \ref{Histogrammes et distribution de loi géométrique}.
+
+\begin{figure}[!h]
+\label{Histogrammes et distribution de loi géométrique}
+\centering
+\includegraphics[scale=0.3]{images/histGeom.png} 
+\caption{Histogrammes et distribution de loi géométrique}
+\end{figure}
+
+Pour générer les populations (voir figure \ref{Histogrammes et distribution de loi géométrique} , on utilise la fonction "geomGen" qui simule $n$ expériences où, pour chacune d'entre elle, on effectue un enchainement
+d'épreuve de Bernouilli en générant une variable de loi uniforme sur
+$[0;1]$ . Si la valeur obtenu est supérieure à p, on arrête la boucle
+et la valeur générée est égale au nombre d'épreuves, sinon on continue 
+jusqu'à obtenir cette condition. Le code Matlab (Octave) utilisé est :
+
+\lstinputlisting[language=Matlab]{src/geomGen.m}
+
+
+\subsection{Estimateurs du maximum de vraisemblance}
+
+L'estimateur $\hat{p}$ du maximum de vraisemblance est la valeur qui
+maximise la loi de vraisemblance $L(p)$ : $\hat{p}=argmax(L(p))$.
+On calcule $L(p)$ dans un premier temps :
+\[L(p)=L(X_1(p),X_2(p),...,X_n(p))=\prod\limits_{i=1}^{n}(1-p)^{X_i-1}p \]
+avec $X_i,\ i\in\{1,..,n\}$ les variables d'échantillon.
+\[L(p)=p^n(1-p)^{(\sum\limits_{i=1}^{n}X_i)-n}\]
+On peut effectuer un passage au logarithme pour trouver un maximum car il s'agit
+d'une fonction strictement croissante (et défini sur $]0;1]$). L'argument du maximum du logarithme
+de $L(p)$ et du maximum de $L(p)$ sont les mêmes.
+\[\log{L(p)}=n\log{p}+(\sum\limits_{i=1}^{n}X_i)-n\]
 
 \begin{thebibliography}{3}
 \bibitem{WikiLoiCauchy}
