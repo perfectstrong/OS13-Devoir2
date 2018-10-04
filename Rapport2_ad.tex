@@ -158,6 +158,12 @@ de $L(p)$ et du maximum de $L(p)$ sont les mêmes.
 \[\text{Ce qui implique (dans le cas différent de 0 et 1) }n-(\sum\limits_{i=1}^{n}X_i)\hat{p}=0\]
 Finalement :
 \[\hat{p} = \frac{n}{\sum\limits_{i=1}^{n}X_i}\]
+De plus on peut vérifier qu'il s'agit bien d'un maximum (unique et donc global) en regardant si la fonction $L(p)$ est concave :
+\[\frac{d^2\log{L(p)}}{dp^2} = -\frac{n}{p^2}-\frac{\sum\limits_{i=1}^{n}X_i)-n}{1-p}\]
+Sachant que $\sum\limits_{i=1}^{n}X_i > n $
+et que $p\in[0;1]$, on a:
+\[\frac{d^2 \log{L(p)}}{dp^2}<0 \ \forall p\in[0;1]\]
+La fonction $L(p)$ est donc concave et l'estimateur trouvé $\hat{p} = \frac{n}{\sum\limits_{i=1}^{n}X_i}$ maximise bien la loi de vraisemblance.
 
 Si la résolution analytique pour trouver l'estimateur avait été impossible,
 l'utilisation d'un algorithme d'optimisation (comme une descente de gradient) ou encore
@@ -168,8 +174,10 @@ l'utilisation d'une fonction d'intégration aurait été possible.
 Afin de tester l'estimateur du maximum de vraisemblance pour différent taille
 d'échantillon, on utilise le code suivant :
 
-\lstinputlisting[language=Matlab]{src/deltaEspEstGeom.m}
+\lstinputlisting[language=Matlab]{src/deltaEstGeom.m}
 
+
+%OLD!!!!!!!
 \begin{figure}[!h]
 \begin{center}
  \includegraphics[scale=0.3]{images/biaisGeom.png} 
@@ -182,8 +190,11 @@ On voit que
 
 On effectue la ...
 
-\lstinputlisting[language=Matlab]{src/deltaEstGeom.m}
 
+\lstinputlisting[language=Matlab]{src/deltaEspEstGeom.m}
+
+
+%OLD!!!!!
 \begin{figure}[!h]
 \begin{center}
  \includegraphics[scale=0.3]{images/biaisMoyGeom.png} 
