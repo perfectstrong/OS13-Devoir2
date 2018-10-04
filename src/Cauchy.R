@@ -2,7 +2,7 @@
 set.seed(2018)
 real_x0 = 13
 real_a = 0.5
-nbreaks = 20
+nbreaks = 40
 
 # générér échantillons
 N = 1000
@@ -37,13 +37,15 @@ hist(x,
      xlab = "x",
      ylab = "Densité",
      ylim = c(0, 0.2),
-     main = "Loi de Cauchy - réalité vs théorique") # histogramme
+     main = "Loi de Cauchy - réalité vs théorique") # histogram
 curve(dcauchy(x, real_x0, real_a),
       add = TRUE,
-      col = "black") # théorique
+      col = "black") # theoretic
 curve(dcauchy(x, result@coef[1], result@coef[2]),
       add = TRUE,
-      col = "red") # réalité
+      col = "red") # calculated
 legend("topright",
        legend = c("histogramme", "théorique", "réalité"),
        fill = c("green", "black", "red"))
+
+ks.test(x, "pcauchy", real_x0, real_a)

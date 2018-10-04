@@ -3,14 +3,18 @@
 \usepackage[french]{babel}
 \usepackage[T1]{fontenc}
 \usepackage{amsmath}
+\usepackage{amsthm}
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{url}
-\author{TRAN Quoc Nhat Han - Andrien Wartelle}
-\title{Test paramétrique et de l'estimation de la loi géométrique et de Cauchy}
 \usepackage{color}
 \usepackage{listings}
+\usepackage{mathrsfs}
+
+\title{OS13 : Test d'estimation et loi extrême des lois de Cauchy et géométrique}
+\author{\textsc{Adrien WARTELLE} \\ \textsc{TRAN Quoc Nhat Han}}
+\date{\today}
 \lstset{
 language=R,
 basicstyle=\scriptsize\ttfamily,
@@ -45,6 +49,26 @@ literate=
   {€}{{\EUR}}1 {£}{{\pounds}}1
 }
 \numberwithin{equation}{section}
+
+\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
+\definecolor{mylilas}{RGB}{170,55,241}
+\lstset{language=Matlab,%
+    %basicstyle=\color{red},
+    breaklines=true,%
+    morekeywords={matlab2tikz},
+    keywordstyle=\color{blue},%
+    morekeywords=[2]{1}, keywordstyle=[2]{\color{black}},
+    identifierstyle=\color{black},%
+    stringstyle=\color{mylilas},
+    commentstyle=\color{mygreen},%
+    showstringspaces=false,%without this there will be a symbol in the places where there is a space
+    numbers=left,%
+    numberstyle={\tiny \color{black}},% size of the numbers
+    numbersep=9pt, % this defines how far the numbers are from the text
+    emph=[1]{for,end,break},emphstyle=[1]\color{red}, %some words to emphasise
+    %emph=[2]{word1,word2}, emphstyle=[2]{style},    
+}
+
 \begin{document}
 \maketitle 
 \renewcommand{\contentsname}{Sommaire}
@@ -53,12 +77,7 @@ literate=
 \clearpage
 
 \begin{abstract}
-Ce rapport est à montrer l'application de certaines tests statistiques pour la loi géométrique et la loi de Cauchy. Chaque section consiste de trois étapes séparées:
-\begin{enumerate}
-\item \emph{Estimer les paramètres inconnus}
-\item \emph{Test de l'estimation}
-\item \emph{Test d'adéquation}
-\end{enumerate}
+Ce rapport est à montrer l'application de certaines tests statistiques pour la loi géométrique et la loi de Cauchy.
 \end{abstract}
 
 \section{Loi de Cauchy}
@@ -127,15 +146,158 @@ Nous essayons d'estimer $x_0$ et $a$ directment. L'algorithme d'approximation im
 
 Testons avec $x_0=13$ et $a=0.5$.
 
-\lstinputlisting{src/Cauchy.R}
-
+\lstinputlisting[firstline=1, lastline=49, language=R]{src/Cauchy.R}
 
 \begin{figure}[h]
-\includegraphics[width=\linewidth]{images/Cauchy_breaks=20.png}
+\includegraphics[width=\linewidth]{images/Cauchy_real_vs_theo.png}
 \caption{Représentation de l'histogramme et de la courbe de densité}
 \end{figure}
 
-Les valeurs trouvées par R, $\hat{x_0} = 12.9877139$ et $\hat{a} = 0.4951073$, sont vraiment approchées à celles théoriques.
+Pour $x_0=13$ et $a=0.5$, les valeurs trouvées par R sont $\hat{x_0} = 12.9877139$ et $\hat{a} = 0.4951073$.
+
+\subsection{Test de paramètres}
+
+Nous testons ici si les valeurs trouvées par R sont vraiment approchées à celles théoriques. Pour l'instant, nous n'avons pas d'outils pour vérifier 2 variables en couple.
+
+\subsection{Test d'adéquation}
+
+R nous donne la fonction \emph{ks.test} pour valider la compabilité d'une échantillon avec une loi selon le test de Kolmogorov-Smirnov.
+
+\lstinputlisting[firstline=51, lastline=51]{src/Cauchy.R}
+
+On a trouvé $D = 0.02696$, $p-value = 0.4614$, signifiant l'écart maximale est $0.02696$ et le niveau d'acceptance est $0.4614$. Vu que nous fixons $\alpha = 5\% < p-value$, l'échantillon dépasse largement le test. Autrement dit, il se distribue selon la loi de Cauchy.
+
+\subsection{Etude de biais d'estimateur}
+
+Maintenant on s'intéresse au biais d'estimateur. On relance l'algorithme en-dessus avec de différents observations ($N = 100, 125, 150,..., 1100$). $x_0 = 13$ et $a = 0.5$.
+
+\lstinputlisting{src/Cauchy-variN.R}
+
+\begin{figure}[h]
+\includegraphics[width=\linewidth]{images/Cauchy_convergence_parametres.png}
+\caption{Convergences de $\hat{x_0}$ et $\hat{a}$ vers valeurs théoriques}
+\end{figure}
+
+Nous observons que les valeurs estimées se rassemblent assez proches de la valeur théorique.
+
+\subsection{Etude de loi d'extremum}
+
+Générons donc des échantillons de $n$ valeurs ($n=10, 100, 1000, etc.$). Parmi chacun, $\frac{n}{10}$ valeurs les plus grandes seront gardées pour étudier la loi d'extremum.
+
+Comme les réalisations sont indépendantes et identiquement distribuées, théoriquement:
+\begin{align*}
+{F_{{x_{\max }}}}\left( x \right) & = P\left( {{X_{\max }} \le x} \right)\\
+&  = P\left( {{X_1} \le x,...,{X_n} \le x} \right)\\
+ & = \prod\limits_{i = 1}^n {{F_X}\left( x \right)} \\
+ & = {F_X}{\left( x \right)^n}
+\end{align*}
+
+Avec ${F_X}\left( x \right) = \frac{1}{\pi }\arctan \frac{{x - {x_0}}}{a} + \frac{1}{2}$, la fonction de répartition de la loi de Cauchy. Alors, \[{F_{{x_{\max }}}}\left( x \right) = {\left( {\frac{1}{\pi }\arctan \frac{{x - {x_0}}}{a} + \frac{1}{2}} \right)^n}\]
+
+Or, \[\left| {\arctan \frac{{x - {x_0}}}{a}} \right| < \frac{\pi }{2} \Rightarrow \frac{{ - \pi }}{2} < \arctan \frac{{x - {x_0}}}{a} < \frac{\pi }{2} \Rightarrow 0 < \arctan \frac{{x - {x_0}}}{a} + \frac{\pi }{2} < \pi \]
+
+Par conséquence,
+
+\[\begin{array}{l}
+\tan \left( {\arctan \frac{{x - {x_0}}}{a} + \frac{\pi }{2}} \right) =  - \cot \left( {\arctan \frac{{x - {x_0}}}{a}} \right) =  - \frac{a}{{x - {x_0}}}\\
+ \Rightarrow \arctan \frac{{x - {x_0}}}{a} + \frac{\pi }{2} = \arctan \left( { - \frac{a}{{x - {x_0}}}} \right) = \arctan \frac{a}{{{x_0} - x}}\\
+ \Rightarrow {F_{{x_{\max }}}}\left( x \right) = {\pi ^{ - n}}{\left( {\arctan \frac{{x - {x_0}}}{a} + \frac{\pi }{2}} \right)^n} = {\pi ^{ - n}}{\arctan ^n}\frac{a}{{{x_0} - x}}
+\end{array}\]
+\clearpage
+
+Nous prenons 3 valeurs les plus grandes pour chaque itération, et établissons leur histogramme.
+\lstinputlisting[language=R, firstline=1, lastline=39]{src/Cauchy-extreme.R}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\linewidth]{images/Cauchy_extremum.png}
+\caption{Histogramme de valeurs extremum de la distribution de Cauchy}
+\end{figure}
+
+En fin d'approximer la loi d'extremum, nous ne regardons que les réalisations positives. En utilisant le package \emph{poweRlaw}, nous calculons la compabilité de la loi d'extremum.
+
+\lstinputlisting[language=R, firstline=41, lastline=50]{src/Cauchy-extreme.R}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\linewidth]{images/Cauchy_extremum_fitting.png}
+\caption{Approcher la loi d'extremum avec celle des maximales de Cauchy. Les données (verte) ne s'approchent pas totalement l'approximation (rouge).}
+\end{figure}
+
+Calcul de $p-value$ nous retourne $0$, qui signifie l'incompabilité de ces deux lois.
+\clearpage
+
+\section{Loi géométrique}
+
+La loi géomètrique est une loi discrète de distribution utilisé
+dans le cadre d'un enchainement (non fini) d'épreuves de Bernouilli. Soit
+X une varaible aléatoire suivant cette loi, on a:
+\[P(X=k) = (1-p)^(k-1)p\ k\in\mathbb{N}_{+}\]
+La variable X est le numéro de la première épreuve où l'on obtient un succès
+qui a une probabilité p. Ainsi, p est le seul paramètre de loi (à estimer).
+La fonction de répartition $F(k) = P(X\leq{}k)\ k\in\mathbb{N}_{+}$ est:
+\[F(k)=1-(1-p)^{k}\]
+\begin{proof}
+On peut remarquer que:
+\[P(X=k)=(1-p)^{k-1}(1-(1-p))=(1-p)^{k-1}-(1-p)^{k}\]
+Donc :
+\begin{align*}
+F(k) & =\sum\limits_{l=1}^{k}P(X=l)=\sum\limits_{l=1}^{k}((1-p)^{l-1}-(1-p)^{l}) \\
+F(k) & =\sum\limits_{l=0}^{k-1}(1-p)^{l}-\sum\limits_{l=1}^{k}(1-p)^{l}
+\end{align*}
+Soit $q=1-p$, on a :
+\begin{align*}
+F(k) & =\sum\limits_{l=0}^{k-1}q^{l}-\sum\limits_{l=1}^{k}q^{l}\\
+F(k) & =\frac{1-p^k}{1-q}-(\frac{1-q^{k+1}}{1-q}-1) \\ 
+F(k) & =\frac{1-q^k-1+q^{k+1}+1-q}{1-q} \\
+F(k) & =\frac{1-q+q^{k+1}-q^k}{1-q} \\
+F(k) & =\frac{1-q-q^k(1-q)}{1-q} \\ 
+F(k) & =\frac{1-q-q^k(1-q)}{1-q} \\
+F(k) & =1-q^k
+\end{align*}
+
+On retrouve bien :
+\[F(k)=1-(1-p)^k\]
+\end{proof}
+
+\subsection{Génération de n variables aléatoires}
+
+Afin de voir à quoi ressemble la distribution et de pouvoir tester l'estimateur que
+nous allons calculer par la suite, on génère des échantillons de 50, 500 et 5000 variables.
+On utilise ainsi le code Matlab (Octave) ce dessous :
+
+\lstinputlisting[language=Matlab, firstline=3, lastline=28]{src/geom.m}
+
+On obtient ainsi la figure \ref{Histogrammes et distribution de loi géométrique}.
+
+\begin{figure}[!h]
+\label{Histogrammes et distribution de loi géométrique}
+\centering
+\includegraphics[scale=0.3]{images/histGeom.png} 
+\caption{Histogrammes et distribution de loi géométrique}
+\end{figure}
+
+Pour générer les populations (voir figure \ref{Histogrammes et distribution de loi géométrique} , on utilise la fonction "geomGen" qui simule $n$ expériences où, pour chacune d'entre elle, on effectue un enchainement
+d'épreuve de Bernouilli en générant une variable de loi uniforme sur
+$[0;1]$ . Si la valeur obtenu est supérieure à p, on arrête la boucle
+et la valeur générée est égale au nombre d'épreuves, sinon on continue 
+jusqu'à obtenir cette condition. Le code Matlab (Octave) utilisé est :
+
+\lstinputlisting[language=Matlab]{src/geomGen.m}
+
+
+\subsection{Estimateurs du maximum de vraisemblance}
+
+L'estimateur $\hat{p}$ du maximum de vraisemblance est la valeur qui
+maximise la loi de vraisemblance $L(p)$ : $\hat{p}=argmax(L(p))$.
+On calcule $L(p)$ dans un premier temps :
+\[L(p)=L(X_1(p),X_2(p),...,X_n(p))=\prod\limits_{i=1}^{n}(1-p)^{X_i-1}p \]
+avec $X_i,\ i\in\{1,..,n\}$ les variables d'échantillon.
+\[L(p)=p^n(1-p)^{(\sum\limits_{i=1}^{n}X_i)-n}\]
+On peut effectuer un passage au logarithme pour trouver un maximum car il s'agit
+d'une fonction strictement croissante (et défini sur $]0;1]$). L'argument du maximum du logarithme
+de $L(p)$ et du maximum de $L(p)$ sont les mêmes.
+\[\log{L(p)}=n\log{p}+(\sum\limits_{i=1}^{n}X_i)-n\]
 
 \begin{thebibliography}{3}
 \bibitem{WikiLoiCauchy}
