@@ -1,4 +1,5 @@
-﻿# fixer le gemme et paramètres réels
+﻿
+# fixer le gemme et paramètres réels
 set.seed(2018)
 real_x0 = 13
 real_a = 0.5
