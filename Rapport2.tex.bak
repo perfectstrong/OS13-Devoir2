@@ -1,16 +1,21 @@
 \documentclass[12pt,a4paper,titlepage]{article}
 \usepackage[utf8]{inputenc}
-\usepackage[french]{babel}
 \usepackage[T1]{fontenc}
-\usepackage{amsmath}
-\usepackage{amsfonts}
-\usepackage{amssymb}
+\usepackage[french]{babel}
 \usepackage{graphicx}
+\usepackage{amsthm}
+\usepackage{amsmath, amsfonts}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage{color}
+\usepackage{colortbl}
 \usepackage{url}
-\author{TRAN Quoc Nhat Han - Andrien WARTELLE}
-\title{Test paramétrique et de l'estimation de la loi géométrique et de Cauchy}
 \usepackage{color}
 \usepackage{listings}
+
+\title{OS13 : Tests d'estimation et loi extrêmes des lois de Cauchy et géométrique}
+\author{\textsc{Adrien WARTELLE} \\ \textsc{TRAN Quoc Nhat Han}}
+\date{\today}
 \lstset{
 language=R,
 basicstyle=\scriptsize\ttfamily,
@@ -45,6 +50,26 @@ literate=
   {€}{{\EUR}}1 {£}{{\pounds}}1
 }
 \numberwithin{equation}{section}
+
+\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
+\definecolor{mylilas}{RGB}{170,55,241}
+\lstset{language=Matlab,%
+    %basicstyle=\color{red},
+    breaklines=true,%
+    morekeywords={matlab2tikz},
+    keywordstyle=\color{blue},%
+    morekeywords=[2]{1}, keywordstyle=[2]{\color{black}},
+    identifierstyle=\color{black},%
+    stringstyle=\color{mylilas},
+    commentstyle=\color{mygreen},%
+    showstringspaces=false,%without this there will be a symbol in the places where there is a space
+    numbers=left,%
+    numberstyle={\tiny \color{black}},% size of the numbers
+    numbersep=9pt, % this defines how far the numbers are from the text
+    emph=[1]{for,end,break},emphstyle=[1]\color{red}, %some words to emphasise
+    %emph=[2]{word1,word2}, emphstyle=[2]{style},    
+}
+
 \begin{document}
 \maketitle 
 \renewcommand{\contentsname}{Sommaire}
@@ -53,8 +78,181 @@ literate=
 \clearpage
 
 \begin{abstract}
-Ce rapport est à montrer l'application de certaines tests statistiques pour la loi géométrique et la loi de Cauchy.
+Ce rapport montre comment estimer des paramètres pour la loi géométrique et la loi de Cauchy.
+On y étudie aussi les lois extrêmes correspondantes.
 \end{abstract}
+
+\section{Loi géométrique}
+
+\subsection{Rappel}
+
+La loi géomètrique est une loi discrète utilisée
+dans le cadre d'un enchainement (non fini) d'épreuves de Bernouilli. Soit
+$X$ une variable aléatoire suivant cette loi $G(p)$, on a:
+\[P(X=k) = (1-p)^{k-1}p\ k\in\mathbb{N}_{+}\]
+La variable X correspond au numéro de la première épreuve où l'on obtient un succès, celle-ci ayant une probabilité p. Ainsi, p est le seul paramètre de la loi.
+La fonction de répartition $F(k) = P(X\leq{}k)\ k\in\mathbb{N}_{+}$ est:
+\[F(k)=1-(1-p)^{k}\]
+\begin{proof}
+On peut remarquer que:
+\[P(X=k)=(1-p)^{k-1}(1-(1-p))=(1-p)^{k-1}-(1-p)^{k}\]
+Donc :
+\[F(k)=\sum\limits_{l=1}^{k}P(X=l)=\sum\limits_{l=1}^{k}((1-p)^{l-1}-(1-p)^{l})\]
+\[F(k)=\sum\limits_{l=0}^{k-1}(1-p)^{l}-\sum\limits_{l=1}^{k}(1-p)^{l}\]
+Soit $q=1-p$, on a :
+\[F(k)=\sum\limits_{l=0}^{k-1}q^{l}-\sum\limits_{l=1}^{k}q^{l}\]
+\[F(k)=\frac{1-q^k}{1-q}-(\frac{1-q^{k+1}}{1-q}-1)\]
+\[F(k)=\frac{1-q^k-1+q^{k+1}+1-q}{1-q}\]
+\[F(k)=\frac{1-q+q^{k+1}-q^k}{1-q}\]
+\[F(k)=\frac{1-q-q^k(1-q)}{1-q}\]
+\[F(k)=1-q^k\]
+On retrouve bien :
+\[F(k)=1-(1-p)^k\]
+\end{proof}
+
+\subsection{Génération de n variables aléatoires}
+
+Afin de voir à quoi ressemble la distribution et de pouvoir tester l'estimateur que
+nous allons calculer par la suite, on génère des échantillons de 50, 500 et 5000 variables.
+On utilise ainsi le code Matlab (Octave) ci-dessous :
+
+\lstinputlisting[language=Matlab, firstline=3, lastline=28]{src/geom.m}
+
+On obtient ainsi la figure \ref{Histogrammes et distribution de loi géométrique}.
+
+\begin{figure}[!h]
+\begin{center}
+ \includegraphics[scale=0.4]{images/histGeom.png} 
+\end{center}
+ \caption{Histogrammes et distribution de loi géométrique}
+ \label{Histogrammes et distribution de loi géométrique}
+\end{figure}
+
+On observe bien que les histogrammes se rapprochent de la distribution théorique quand
+la taille de l'échantillon est grande (plusieurs milliers). On peut aussi noter que la distribution
+se rapproche d'une loi exponentielle (qui a pour distribution $f(t)=\lambda e^{-\lambda t}, \forall x \in \mathbb{R}_{+}$). En effet la loi géométrique est aussi une loi sans mémoire, c'est-à-dire que :
+\[\forall k,l \in \mathbb{N}_{+}, P(X=k+l|X>k) = P(X=l) = (1-p)^{l-1}p \]
+Cette propriété caractérise la loi exponentielle dans le cas continue, on voit alors que la loi exponentielle correspond à la limite continue de la loi géométrique si l'on fait correspondre les valeurs k obtenues par $X\sim G(p)$ avec des intervalles de  $\mathbb{R}_{+}$ et si l'on fait correspondre $p$ avec la probabilité $P(t_{k}<T<t_{k}+h|t_{k})=e^{-\lambda h}$, T suivant une loi exponentielle $\epsilon(\lambda)$ et $[t_{k},t_{k}+h]$ l'intervalle correspondant à la valeur k. Pour améliorer cette "similarité", on prendra $h$ et (donc $p$) le plus petit possible.
+
+Pour générer les populations , on utilise la fonction "geomGen" qui simule
+n expériences où, pour chacune d'entre elle, on effectue un enchainement
+d'épreuve de Bernouilli en générant une variable de loi uniforme sur
+$[0;1]$ . Si la valeur obtenu est supérieure à p, ce qui a une probabilité p d'arriver, on arrête la boucle
+et la valeur générée est égale au nombre d'épreuves, sinon on continue 
+jusqu'à obtenir cette condition. Le code Matlab (Octave) utilisé est :
+
+\lstinputlisting[language=Matlab]{src/geomGen.m}
+
+Cette méthode revient à générer de manière répéter
+une variable de Bernouilli.
+
+
+\subsection{Estimateurs du maximum de vraisemblance}
+
+L'estimateur $\hat{p}$ du maximum de vraisemblance est la valeur qui
+maximise la loi de vraisemblance L(p) : $\hat{p}=arg\ \underset{p}{max}(L(p))$.
+On calcule L(p) dans un premier temps en assumant que les variables sont indépendantes \footnote{on le supposera par la suite pour les échantillons générés} :
+\[L(p)=L(X_1(p),X_2(p),...,X_n(p))=\prod\limits_{i=1}^{n}(1-p)^{X_i-1}p 
+\]
+avec $X_i,\ i\in\{1,..,n\}$ les variables d'échantillon.
+\[L(p)=p^n(1-p)^{(\sum\limits_{i=1}^{n}X_i)-n}\]
+On peut effectuer un passage au logarithme pour trouver un maximum car il s'agit
+d'une fonction strictement croissante (et défini sur $]0;1]$). L'argument du maximum du logarithme
+de $L(p)$ et du maximum de $L(p)$ sont les mêmes.
+\[\log{L(p)}=n\log{p}+((\sum\limits_{i=1}^{n}X_i)-n)\log{(1-p)}\]
+\[\frac{d\log{L(p)}}{dp}=\frac{n}{p}-\frac{(\sum\limits_{i=1}^{n}X_i)-n}{1-p}\]
+\[\text{On a }\frac{d\log{L(\hat{p})}}{dp}=0\]
+\[\text{Donc }\frac{n-n\hat{p}-((\sum\limits_{i=1}^{n}X_i)-n)\hat{p}}{\hat{p}(1-\hat{p})}=0\]
+\[\text{Ce qui implique (dans le cas différent de 0 et 1) }n-(\sum\limits_{i=1}^{n}X_i)\hat{p}=0\]
+Finalement :
+\[\hat{p} = \frac{n}{\sum\limits_{i=1}^{n}X_i}\]
+De plus on peut vérifier qu'il s'agit bien d'un maximum (unique et donc global) en regardant si la fonction $L(p)$ est concave :
+\[\frac{d^2\log{L(p)}}{dp^2} = -\frac{n}{p^2}-\frac{\sum\limits_{i=1}^{n}X_i-n}{1-p}\]
+Sachant que $\sum\limits_{i=1}^{n}X_i > n $
+et que $p\in[0;1]$, on a:
+\[\frac{d^2 \log{L(p)}}{dp^2}<0 \ \forall p\in[0;1]\]
+La fonction $L(p)$ est donc concave et l'estimateur trouvé $\hat{p} = \frac{n}{\sum\limits_{i=1}^{n}X_i}$ maximise bien la loi de vraisemblance.
+
+Si la résolution analytique pour trouver l'estimateur avait été impossible,
+l'utilisation d'un algorithme d'optimisation (comme une descente de gradient) ou encore
+l'utilisation d'une fonction d'intégration aurait été possible.
+
+\subsection{Test de l'estimateur}
+
+Afin de tester l'estimateur du maximum de vraisemblance pour différent taille
+d'échantillon, on utilise le code suivant :
+
+\lstinputlisting[language=Matlab]{src/deltaEstGeom.m}
+
+On estime la valeur théorique $p=0.1$ en utilisant
+estimateur de vraisemblance $\hat{p} = \frac{n}{\sum\limits_{i=1}^{n}X_i}$ pour des tailles d'échantillons $n$ allant de 10 à 10000.
+On mesure pour chaque $n$ l'écart relatif $\frac{\hat{p}-p}{p}$ et on obtient la figure \ref{Evolution du biais de l'estimateur geom}.
+
+\begin{figure}[!h]
+\begin{center}
+ \includegraphics[scale=0.3]{images/biaisGeom.png} 
+\end{center}
+ \caption{Evolution du biais de l'estimateur}
+ \label{Evolution du biais de l'estimateur geom}
+\end{figure}
+
+On voit que que l'estimateur commence à être relativement précis, c'est à dire avec un biais relatif en dessous de 10\%, autour de 1000 ($10^3$ valeurs) variables générées. On peut noter aussi que, pour des valeurs petites de n, les écarts sont beaucoup plus souvent positifs ($\hat{p}>p$) que négatifs ($\hat{p}>p$) et que ces écarts positifs vont jusqu'à plus de 75\% alors que les négatifs sont en dessous de 40\%. On peut alors émettre l'hypothèse que notre estimateur est biaisé. 
+
+Pour confirmer cette hypothèse, il faudrait calculer le biais de l'estimateur qui correspond à l'écart moyen (d'espérance) entre l'estimateur et le paramètre réel. En effet l'écart entre $p$ et $\hat{p}$ est une variable aléatoire qui va dépendre de l'échantillon généré\footnote{Il faut donc plusieurs échantillons pour le tester (pour un n donné)}. Si on essaye d'obtenir une valeur théorique :
+\[B=\mathbb{E}(\hat{p} - p)\]
+\[B=\mathbb{E}(\hat{p}) - p\]
+\[B=n\mathbb{E}\left(\frac{1}{\sum\limits_{1}^{n}X_{i}}\right) - p\]
+
+On voit que ce calcul n'est pas simple puisqu'il
+faudrait connaître la loi de l'inverse de la somme de variables géométriques \footnote{on pourrait considérer que la somme suit une loi gaussienne en utilisant le théorème centrale-limite et d'utiliser la gaussienne inverse}. 
+
+Nous allons donc estimer l'espérance du biais, pour différentes valeurs de n, en utilisant la moyenne des biais obtenus sur plusieurs échantillons (pour une même taille n) :
+
+\lstinputlisting[language=Matlab]{src/deltaEspEstGeom.m}
+
+Pour des valeurs de n allant de 10 à 1000, on calcule l'écart moyen de 500 estimations provenant de 500 échantillons différents et obtient la figure\ref{Evolution de l'écart moyen de de l'estimateur geom}.
+
+\begin{figure}[!h]
+\begin{center}
+ \includegraphics[scale=0.3]{images/biaisMoyGeom.png} 
+\end{center}
+ \caption{Evolution de l'écart moyen de l'estimateur}
+ \label{Evolution de l'écart moyen de de l'estimateur geom}
+\end{figure}
+
+On voit très clairement que l'estimateur a un biais positif (en considérant que 500 valeurs permettent de correctement estimer celui-ci, ce qui semble raisonnable) pour des valeurs de n inférieur à 100. On observe 2 pics, le premier à environ +12\% d'erreur pour une taille de 15 et une autre de +6\% pour une taille de 50.
+
+Afin de mieux voir ce biais, on prend un pas de taille de $0.01$ pour $\log_{10}(n)$, n allant de 10 à 100 et on obtient la figure \ref{Evolution de l'ecart moyen de de l'estimateur affiné geom}. Le biais estimé va de +20\% en n=10 et redescend proche 0 en n=100 avec des variations allant jusqu'à 5\% entre chaque estimation. On peut donc raisonnablement affirmer que l'estimateur $\hat{p}$ est biaisé pour des échantillons de taille réduite (en dessous de 100) mais que le biais est suffisamment petit pour des tailles grandes (n>100).
+
+\begin{figure}[!h]
+\begin{center}
+ \includegraphics[scale=0.3]{images/biaisMoyGeomBis.png} 
+\end{center}
+ \caption{Evolution de l'écart moyen de l'estimateur affiné}
+ \label{Evolution de l'ecart moyen de de l'estimateur affiné geom}
+\end{figure}
+
+
+\subsection{Loi extrême}
+
+On veut voir à que ressemble la loi extrême correspondant à la loi géomètrique. Pour cela on génère $m$ (10, 100, 1000 et 10000) échantillons de $n=100$ variables et on prend la valeur maximale (1\%) de l'échantillon à chaque fois pour générer un échantillon des maximums des échantillons de loi géométrique. On utilise le code suivant :
+
+\lstinputlisting[language=Matlab]{src/extrem.m}
+
+On obtient alors la figure \ref{Distributions extrêmes de la loi géométrique}.
+
+\begin{figure}[!h]
+\begin{center}
+ \includegraphics[scale=0.3]{images/extremGeom.png} 
+\end{center}
+ \caption{Distributions extrêmes de la loi géométrique}
+ \label{Distributions extrêmes de la loi géométrique}
+\end{figure}
+
+La distribution extrême correspondante ne peut pas être une loi de gumbel puisque nous avons des valeurs uniquement positive, cela pourrait être une loi de Weibull ....
+
+\newpage
+
 
 \section{Loi de Cauchy}
 \subsection{Rappel}
@@ -69,7 +267,7 @@ Soit $f_X$ la fonction de densité de Cauchy de deux paramètres $x_0$ et $a$ ($
 \caption{Distribution théorique de la loi Cauchy. Source : \cite{WikiLoiCauchy}}
 \end{figure}
 
-$a$ est dite l'échelle de la fonction, et $x_0$ est son médian.
+$a$ est dite l'échelle de la fonction, et $x_0$ est sa médiane.
 
 La loi de Cauchy n'admet ni espérance ni écart type.
 
@@ -107,22 +305,24 @@ On cherche l'optimum maximale.
 
 \begin{align*}
 \frac{{\partial L}}{{\partial a}}\left( X \right) & = {\pi ^{ - n}}\sum\limits_{j = 1}^n {\left( {\frac{{{{\left( {{x_j} - {x_0}} \right)}^2} + a - a}}{{{{\left( {{x_j} - {x_0}} \right)}^2} + a}}\prod\limits_{i = 1;i \ne j}^n {\frac{a}{{{{\left( {{x_i} - {x_0}} \right)}^2} + a}}} } \right)}\\
-&  = {\pi ^{ - n}}{a^{n - 1}}\frac{{\sum\limits_{j = 1}^n {{{\left( {{x_0} - {x_j}} \right)}^2}} }}{{\prod\limits_{i = 1}^n {\left( {{{\left( {{x_i} - {x_0}} \right)}^2} + a} \right)} }} > 0 \forall a > 0
+&  = {\pi ^{ - n}}{a^{n - 1}}\frac{{\sum\limits_{j = 1}^n {{{\left( {{x_0} - {x_j}} \right)}^2}} }}{{\prod\limits_{i = 1}^n {\left( {{{\left( {{x_i} - {x_0}} \right)}^2} + a} \right)} }} > 0,\ \forall a > 0
 \end{align*}
+On ne peut donc pas estimer a par la méthode du max
 
 \subsubsection*{Résolution par R}
 
-On génère une échantillon avec $a$ et $x_0$ au choix. Puis, utiliser la fonction $mle$ (Maximum Likelihood Estimator) de librairie \emph{stats4} avec 2 valeurs initiales $\hat{a}$ et $\hat{x_0}$ pour estimer $a$ et $x_0$.
+On génère un échantillon avec $a$ et $x_0$ au choix. Puis, on utilise la fonction $mle$ (Maximum Likelihood Estimator) de librairie \emph{stats4} avec 2 valeurs initiales $\hat{a}$ et $\hat{x_0}$ pour estimer $a$ et $x_0$.
 
-Nous essayons d'estimer $x_0$ et $a$ directment. L'algorithme d'approximation implémenté dans R a besoin un bon point de départ, sinon le résultat obtenu variera grossièrement.
+Nous essayons d'estimer $x_0$ et $a$ directment. L'algorithme d'approximation implémenté dans R a besoin d'un bon point de départ, sinon le résultat obtenu variera grossièrement.
 \begin{itemize}
-\item Etant donné que la médiane est théoriquement aussi $x_0$, choissisons $x_0$ comme la médiane de l'échantillon.
+\item Etant donné que la médiane est théoriquement aussi $x_0$, choisissons $x_0$ comme la médiane de l'échantillon.
 \item Nous avons ${f_X}\left( {{x_0}} \right) = \frac{1}{{\pi a}}$. En plus, $f_X(x_0)$ est la valeur maximale $d$ de densité. Prenons alors $\hat a = \frac{1}{{\pi d}}$.
 \end{itemize}
 
 Testons avec $x_0=13$ et $a=0.5$.
 
-\lstinputlisting[firstline=1, lastline=49, language=R]{src/Cauchy.R}
+PROBLEME UTF8 Cauchy.R
+%\lstinputlisting[firstline=1, lastline=49, language=R]{src/Cauchy.R}
 
 \begin{figure}[h]
 \includegraphics[width=\linewidth]{images/Cauchy_real_vs_theo.png}
@@ -137,7 +337,7 @@ Nous testons ici si les valeurs trouvées par R sont vraiment approchées à cel
 
 \subsection{Test d'adéquation}
 
-R nous donne la fonction \emph{ks.test} pour valider la compabilité d'une échantillon avec une loi selon le test de Kolmogorov-Smirnov.
+R nous donne la fonction \emph{ks.test} pour valider la compatibilité d'une échantillon avec une loi selon le test de Kolmogorov-Smirnov.
 
 \lstinputlisting[firstline=51, lastline=51]{src/Cauchy.R}
 
@@ -149,13 +349,13 @@ Maintenant on s'intéresse au biais d'estimateur. On relance l'algorithme en-des
 
 \lstinputlisting{src/Cauchy-variN.R}
 
-\begin{figure}[h]
+\begin{figure}[!h]
 \includegraphics[width=\linewidth]{images/Cauchy_convergence_parametres.png}
 \caption{Convergences de $\hat{x_0}$ et $\hat{a}$ vers valeurs théoriques}
 \end{figure}
 
 Nous observons que les valeurs estimées se rassemblent assez proches de la valeur théorique.
-
+\clearpage
 \subsection{Etude de loi d'extremum}
 
 Générons donc des échantillons de $n$ valeurs ($n=10, 100, 1000, etc.$). Parmi chacun, $\frac{n}{10}$ valeurs les plus grandes seront gardées pour étudier la loi d'extremum.
@@ -172,36 +372,39 @@ Avec ${F_X}\left( x \right) = \frac{1}{\pi }\arctan \frac{{x - {x_0}}}{a} + \fra
 
 Or, \[\left| {\arctan \frac{{x - {x_0}}}{a}} \right| < \frac{\pi }{2} \Rightarrow \frac{{ - \pi }}{2} < \arctan \frac{{x - {x_0}}}{a} < \frac{\pi }{2} \Rightarrow 0 < \arctan \frac{{x - {x_0}}}{a} + \frac{\pi }{2} < \pi \]
 
-Par conséquence,
+Par conséquent,
 
 \[\begin{array}{l}
 \tan \left( {\arctan \frac{{x - {x_0}}}{a} + \frac{\pi }{2}} \right) =  - \cot \left( {\arctan \frac{{x - {x_0}}}{a}} \right) =  - \frac{a}{{x - {x_0}}}\\
  \Rightarrow \arctan \frac{{x - {x_0}}}{a} + \frac{\pi }{2} = \arctan \left( { - \frac{a}{{x - {x_0}}}} \right) = \arctan \frac{a}{{{x_0} - x}}\\
  \Rightarrow {F_{{x_{\max }}}}\left( x \right) = {\pi ^{ - n}}{\left( {\arctan \frac{{x - {x_0}}}{a} + \frac{\pi }{2}} \right)^n} = {\pi ^{ - n}}{\arctan ^n}\frac{a}{{{x_0} - x}}
 \end{array}\]
-\clearpage
 
 Nous prenons 3 valeurs les plus grandes pour chaque itération, et établissons leur histogramme.
-\lstinputlisting[language=R, firstline=1, lastline=39]{src/Cauchy-extreme.R}
-\begin{center}
 
-\begin{figure}[h]
-\includegraphics[width=\linewidth*0.8]{images/Cauchy_extremum.png}
+\lstinputlisting[language=R, firstline=1, lastline=39]{src/Cauchy-extreme.R}
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.8\linewidth]{images/Cauchy_extremum.png}
 \caption{Histogramme de valeurs extremum de la distribution de Cauchy}
 \end{figure}
-\end{center}
 
-En fin d'approximer la loi d'extremum, nous ne regardons que les réalisations positives. En utilisant le package \emph{poweRlaw}, nous calculons la compabilité de la loi d'extremum.
+\clearpage
+Puisque notre échantillon se trouve à la fois négatif et positif, essaysons de l'approcher à la loi de Gumbel par MLE
+\[F\left( {x;\mu ,\sigma } \right) = {e^{ - {e^{ - \frac{{x - \mu }}{\sigma }}}}}\] 
+
+Voici le code proposé par \emph{COOLSerdash} \cite{codeRGumbel}
 
 \lstinputlisting[language=R, firstline=41, lastline=50]{src/Cauchy-extreme.R}
-\begin{center}
-\begin{figure}[h]
-\includegraphics[width=0.8\linewidth]{images/Cauchy_extremum_fitting.png}
-\caption{Approcher la loi d'extremum avec celle des maximales de Cauchy. Les données (verte) ne s'approchent pas totalement l'approximation (rouge).}
-\end{figure}
-\end{center}
 
-Calcul de $p-value$ nous retourne $0$, qui signifie l'incompabilité de ces deux loi.
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\linewidth]{images/Cauchy_extremum_fitting.png}
+\caption{Approcher la loi d'extremum avec celle des maximales de Cauchy. Les données (verte) ne s'approchent pas totalement de l'approximation (rouge).}
+\end{figure}
+
+Calcul de $p-value$ nous retourne $0$, qui signifie l'incompatibilité de ces deux lois.
 \clearpage
 
 \begin{thebibliography}{3}
@@ -211,5 +414,10 @@ Wikipedia,
 
 \url{https://en.wikipedia.org/wiki/Cauchy_distribution}
 
+\bibitem{LoiExtremum} 
+\url{https://en.wikipedia.org/wiki/Generalized_extreme_value_distribution}
+
+\bibitem{codeRGumbel}
+\url{https://stats.stackexchange.com/questions/71197/usable-estimators-for-parameters-in-gumbel-distribution}
 \end{thebibliography}
 \end{document}
