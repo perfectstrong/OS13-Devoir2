@@ -1,7 +1,7 @@
 #on charge le package Mass
 library(MASS);
 
-# z contient les données extremum de loi géomètrique
+# z contient les données extremums de loi géomètrique
 
 z<-dataZ041018[1:10000,1];
 
@@ -25,5 +25,5 @@ hist(z,
 );# penser à freq=FALSE!!
 lines(dweibull(0:max(z),shape=paraw$estimate[1],scale=paraw$estimate[2]),type='l',col='blue',lwd=2);
 lines(dlnorm(0:max(z),meanlog = paral$estimate[1],sdlog=paral$estimate[2]),type='l',col='red',lwd=2);
-legend(80, 0.04, legend=c("Loi de Weibull estimée","Loi Log-normale estimée"),col=c("blue", "red"), lty=2, cex=0.8);
+legend(80, 0.04, legend=c("Loi de Weibull estimée","Loi Log-normale estimée"),col=c("blue", "red"), lty=1, cex=0.8);
 

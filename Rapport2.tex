@@ -13,7 +13,7 @@
 \usepackage{color}
 \usepackage{listings}
 
-\title{OS13 : Tests d'estimation et loi extrêmes des lois de Cauchy et géométrique}
+\title{OS13 : Tests d'estimation et lois extrêmes des lois de Cauchy et géométrique}
 \author{\textsc{Adrien WARTELLE} \\ \textsc{TRAN Quoc Nhat Han}}
 \date{\today}
 \lstset{
@@ -89,9 +89,9 @@ On y étudie aussi les lois extrêmes correspondantes.
 La loi géomètrique est une loi discrète utilisée
 dans le cadre d'un enchainement (non fini) d'épreuves de Bernouilli. Soit
 $X$ une variable aléatoire suivant cette loi $G(p)$, on a:
-\[P(X=k) = (1-p)^{k-1}p\ k\in\mathbb{N}_{+}\]
+\[P(X=k) = (1-p)^{k-1}p\ \ ,k\in\mathbb{N}_{+}\]
 La variable X correspond au numéro de la première épreuve où l'on obtient un succès, celle-ci ayant une probabilité p. Ainsi, p est le seul paramètre de la loi.
-La fonction de répartition $F(k) = P(X\leq{}k)\ k\in\mathbb{N}_{+}$ est:
+La fonction de répartition $F(k) = P(X\leq{}k)\ (k\in\mathbb{N}_{+})$ est:
 \[F(k)=1-(1-p)^{k}\]
 \begin{proof}
 On peut remarquer que:
@@ -136,7 +136,7 @@ Cette propriété caractérise la loi exponentielle dans le cas continue, on voi
 
 Pour générer les populations , on utilise la fonction "geomGen" qui simule
 n expériences où, pour chacune d'entre elle, on effectue un enchainement
-d'épreuve de Bernouilli en générant une variable de loi uniforme sur
+d'épreuves de Bernouilli en générant une variable de loi uniforme sur
 $[0;1]$ . Si la valeur obtenu est supérieure à p, ce qui a une probabilité p d'arriver, on arrête la boucle
 et la valeur générée est égale au nombre d'épreuves, sinon on continue 
 jusqu'à obtenir cette condition. Le code Matlab (Octave) utilisé est :
@@ -167,15 +167,15 @@ de $L(p)$ et du maximum de $L(p)$ sont les mêmes.
 Finalement :
 \[\hat{p} = \frac{n}{\sum\limits_{i=1}^{n}X_i}\]
 De plus on peut vérifier qu'il s'agit bien d'un maximum (unique et donc global) en regardant si la fonction $L(p)$ est concave :
-\[\frac{d^2\log{L(p)}}{dp^2} = -\frac{n}{p^2}-\frac{\sum\limits_{i=1}^{n}X_i-n}{1-p}\]
+\[\frac{d^2\log{L(p)}}{dp^2} = -\frac{n}{p^2}-\frac{\sum\limits_{i=1}^{n}X_i-n}{(1-p)^2}\]
 Sachant que $\sum\limits_{i=1}^{n}X_i > n $
 et que $p\in[0;1]$, on a:
 \[\frac{d^2 \log{L(p)}}{dp^2}<0 \ \forall p\in[0;1]\]
 La fonction $L(p)$ est donc concave et l'estimateur trouvé $\hat{p} = \frac{n}{\sum\limits_{i=1}^{n}X_i}$ maximise bien la loi de vraisemblance.
 
 Si la résolution analytique pour trouver l'estimateur avait été impossible,
-l'utilisation d'un algorithme d'optimisation (comme une descente de gradient) ou encore
-l'utilisation d'une fonction d'intégration aurait été possible.
+l'utilisation d'un algorithme d'optimisation de vraisemblance (comme une descente de gradient par exemple) ou encore
+l'utilisation d'une fonction intégrée à R ou Matlab aurait été possible.
 
 \subsection{Test de l'estimateur}
 
@@ -196,15 +196,15 @@ On mesure pour chaque $n$ l'écart relatif $\frac{\hat{p}-p}{p}$ et on obtient l
  \label{Evolution du biais de l'estimateur geom}
 \end{figure}
 
-On voit que que l'estimateur commence à être relativement précis, c'est à dire avec un biais relatif en dessous de 10\%, autour de 1000 ($10^3$ valeurs) variables générées. On peut noter aussi que, pour des valeurs petites de n, les écarts sont beaucoup plus souvent positifs ($\hat{p}>p$) que négatifs ($\hat{p}>p$) et que ces écarts positifs vont jusqu'à plus de 75\% alors que les négatifs sont en dessous de 40\%. On peut alors émettre l'hypothèse que notre estimateur est biaisé. 
+On voit que que l'estimateur commence à être relativement précis, c'est à dire avec un biais relatif en dessous de 10\%, autour de 1000 ($10^3$ valeurs) variables générées. On peut noter aussi que, pour des valeurs petites de n, les écarts sont beaucoup plus souvent positifs ($\hat{p}>p$) que négatifs ($\hat{p}<p$) et que ces écarts positifs vont jusqu'à plus de 60\% alors que les négatifs sont en dessous de 35\%. On peut alors émettre l'hypothèse que notre estimateur est biaisé (plutôt positivement) pour des valeurs de n inférieures à 1000. 
 
 Pour confirmer cette hypothèse, il faudrait calculer le biais de l'estimateur qui correspond à l'écart moyen (d'espérance) entre l'estimateur et le paramètre réel. En effet l'écart entre $p$ et $\hat{p}$ est une variable aléatoire qui va dépendre de l'échantillon généré\footnote{Il faut donc plusieurs échantillons pour le tester (pour un n donné)}. Si on essaye d'obtenir une valeur théorique :
 \[B=\mathbb{E}(\hat{p} - p)\]
 \[B=\mathbb{E}(\hat{p}) - p\]
-\[B=n\mathbb{E}\left(\frac{1}{\sum\limits_{1}^{n}X_{i}}\right) - p\]
+\[B=n\mathbb{E}\left(\frac{i=1}{\sum\limits_{1}^{n}X_{i}}\right) - p\]
 
 On voit que ce calcul n'est pas simple puisqu'il
-faudrait connaître la loi de l'inverse de la somme de variables géométriques \footnote{on pourrait considérer que la somme suit une loi gaussienne en utilisant le théorème centrale-limite et d'utiliser la gaussienne inverse}. 
+faudrait connaître la loi de l'inverse de la somme de variables géométriques (ou tout du moins son espérance). 
 
 Nous allons donc estimer l'espérance du biais, pour différentes valeurs de n, en utilisant la moyenne des biais obtenus sur plusieurs échantillons (pour une même taille n) :
 
@@ -235,7 +235,22 @@ Afin de mieux voir ce biais, on prend un pas de taille de $0.01$ pour $\log_{10}
 
 \subsection{Loi extrême}
 
-On veut voir à que ressemble la loi extrême correspondant à la loi géomètrique. Pour cela on génère $m$ (10, 100, 1000 et 10000) échantillons de $n=100$ variables et on prend la valeur maximale (1\%) de l'échantillon à chaque fois pour générer un échantillon des maximums des échantillons de loi géométrique. On utilise le code suivant :
+La fonction de répartition extrême de variables indépendantes identiquement distribuées correspond à :
+\[F_{X_{\max }}\left( x \right)  = P\left( {{X_{\max }} \le x} \right)\]
+\[F_{X_{\max }}  = P\left( {{X_1} \le x,...,{X_n} \le x} \right)\]
+\[F_{X_{\max }} = \prod\limits_{i = 1}^n {{F_X}\left( x \right)} \]
+\[F_{X_{\max }} = {F_X}\left( x \right)^n\]
+Avec une loi géométrique on obtient alors ($k\in{\mathbb{N}_+}$)
+\[F_{X_{\max }}(k) = (1-(1-p)^{k})^n\]
+Avec la formule du binôme de Newton on a:
+\[F_{X_{\max }}(k) = \sum\limits_{l=0}^{n}C^{l}_{n}(p-1)^{kl}\]
+Par différence on obtient alors la densité (pour $k>1$, sinon $f_{X_{\max }}(1) = F_{X_{\max }}(1)$) :
+\[f_{X_{\max }}(k)=F_{X_{\max }}(k)-F_{X_{\max }}(k-1)\]
+\[f_{X_{\max }}(k)=\sum\limits_{l=0}^{n}C^{l}_{n}(p-1)^{kl}-(p-1)^{(k-1)l}\]
+\[f_{X_{\max }}(k)=\sum\limits_{l=0}^{n}C^{l}_{n}(p-1)^{kl}(1-(p-1)^{-l})\]
+
+
+On veut voir à quoi ressemble la loi extrême correspondant à la loi géomètrique. Pour cela on génère $m$ (10, 100, 1000 et 10000) échantillons de $n=100$ variables et on prend la valeur maximale (1\%) de l'échantillon à chaque fois pour générer un échantillon des maximums des échantillons de loi géométrique. On utilise le code Octave suivant :
 
 \lstinputlisting[language=Matlab]{src/extrem.m}
 
@@ -250,11 +265,11 @@ On obtient alors la figure \ref{Distributions extrêmes de la loi géométrique}
 \end{figure}
 
 La distribution extrême correspondante ne peut pas être une loi de gumbel puisque nous avons des valeurs uniquement positive. Cela pourrait correspondre à une loi de weibull, de Pareto, lognormale ou encore de Fréchet.
-Afin de tester cela on effectue une estimation pour la loi de weibull et la loi lognormale\footnote{les autres lois n'étant pas implémenté et les estimations sont complexes à effectuer} avec le script R suivant (en utlisant la librairie MASS) :
+Afin de tester cela on effectue une estimation pour la loi de weibull et la loi lognormale\footnote{les autres lois ne sont pas implémentées et les estimations sont complexes à effectuer} avec le script R suivant (en utilisant la librairie MASS) :
 
 \lstinputlisting[language=R]{src/geomExtrem.R}
 
-On obtient alors la figure \ref{Estimation loi extrême géométrique}. On voit que la loi lognormale donne une très bonne estimation, meilleure que celle de Weibull. Afin de vérifier que la loi lognormale "colle" au données, il faudrait effectuer un test $\chi^2$ pour comparer les données avec la loi théorique ou utiliser un test de normalité shapiro wilk sur le logarithme des données (mais dans le premier cas il n'y a pas de fonction R directe pour le calcul des intervalles et des probabilités et dans le second cas, R n'accepte pas des échantillons de plus de 5000 (ici on est à 10000)).
+On obtient alors la figure \ref{Estimation loi extrême géométrique}. On voit que la loi lognormale donne une très bonne estimation, meilleure que celle de Weibull. Afin de vérifier que la loi lognormale "colle" au données, il faudrait effectuer un test $\chi^2$ pour comparer les données avec la loi théorique ou utiliser un test de normalité comme celui de Shapiro Wilk sur le logarithme des données (mais dans le premier cas il n'y a pas de fonction R directe pour le calcul des intervalles et des probabilités et dans le second cas, R n'accepte pas des échantillons de plus de 5000 (ici on est à 10000)).
 
 \begin{figure}[!h]
 \begin{center}
@@ -372,7 +387,7 @@ Maintenant on s'intéresse au biais d'estimateur. On relance l'algorithme en-des
 \caption{Convergences de $\hat{x_0}$ et $\hat{a}$ vers valeurs théoriques}
 \end{figure}
 
-Nous observons que les valeurs estimées se rassemblent assez proches de la valeur théorique.
+Nous observons que les valeurs estimées se rassemblent  proche de la valeur théorique.
 \clearpage
 \subsection{Etude de loi d'extremum}
 
